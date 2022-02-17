@@ -33,7 +33,8 @@ class DSProduct(object):
         if self.demands['machine'] == '矿机':
             return 1, '矿机', []
         machine = all_machines[self.demands['machine']]
-        mnumber = number * self.timeconsume / time / machine.efficient
+        mnumber = number * self.timeconsume / \
+            (time * machine.efficient * self.outputnum)
         products = []
         for p in self.demands['products']:
             product = all_products[p]
@@ -82,7 +83,7 @@ class DSTreeNode(object):
         self.machine = machine
         self.mnumber = float(mnumber)
         for child in children:
-            childnum = child['number'] * pnumber / product.outputnum
+            childnum = child['number'] * pnumber
             childnode = DSTreeNode(child['product'], childnum, ptime)
             self.children.append(childnode)
 
@@ -135,12 +136,16 @@ class DSCaculator(object):
         machines = data['machines']
         for m in machines:
             all_machines[m] = DSMachine(m, os.path.join(mdir, m+'.json'))
-    
+
     def clear(self):
         self.denominators.clear()
         self.statistics.clear()
 
     def getProductDenominators(self, dstree):
+        if dstree.machine == "矿机":
+            return
+        f = Fraction(dstree.machine.efficient)
+        self.denominators.append(f.limit_denominator().denominator)
         for child in dstree.children:
             f = Fraction(child.pnumber)
             self.denominators.append(f.limit_denominator().denominator)
@@ -150,7 +155,7 @@ class DSCaculator(object):
         if dstree.machine == "矿机":
             return
         produce_type = (dstree.machine.name, dstree.name)
-        if dstree in self.statistics:
+        if produce_type in self.statistics:
             self.statistics[produce_type] += dstree.mnumber
         else:
             self.statistics[produce_type] = dstree.mnumber
@@ -180,7 +185,7 @@ class DSCaculator(object):
 
     def caculate(self, product):
         self.clear()
-        
+
         if product in all_products:
             product = all_products[product]
         else:

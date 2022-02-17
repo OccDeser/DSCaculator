@@ -113,6 +113,7 @@ class DSC_GUI():
             try:
                 result = self.dsc.caculate(product)
                 resultTree = result.formatTree(prelist=[])
+                self.dsc.clear()
                 self.dsc.countMachines(result)
                 statisData = self.dsc.formatStatis()
                 resultData = resultTree + '\n' + statisData
