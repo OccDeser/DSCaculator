@@ -1,8 +1,7 @@
-import os
-import json
+
 from math import gcd
 from fractions import Fraction
-import re
+import DysonSphereCacuConfig as DSConfig
 
 all_products = {}
 all_machines = {}
@@ -14,20 +13,14 @@ class DSProduct(object):
     timeconsume = 0
     outputnum = 0
 
-    def __init__(self, name, config) -> None:
+    def __init__(self, name, data) -> None:
         self.name = name
-        self.loadConfig(config)
-
-    def __repr__(self) -> str:
-        return self.name
-
-    def loadConfig(self, config):
-        f = open(config, 'r', encoding='utf8')
-        data = json.load(f)
         self.demands = data[0]
         self.timeconsume = data[1]
         self.outputnum = data[2]
-        f.close()
+
+    def __repr__(self) -> str:
+        return self.name
 
     def need(self, number, time):
         if self.demands['machine'] == '矿机':
@@ -48,20 +41,12 @@ class DSProduct(object):
 
 
 class DSMachine(DSProduct):
-    name = ''
-    demands = {}
-    efficient = 1
-    timeconsume = 0
-    outputnum = 0
-
-    def loadConfig(self, config):
-        f = open(config, 'r', encoding='utf8')
-        data = json.load(f)
+    def __init__(self, name, data) -> None:
+        self.name = name
         self.demands = data[0]
         self.timeconsume = data[1]
         self.outputnum = data[2]
         self.efficient = data[3]
-        f.close()
 
 
 class DSTreeNode(object):
@@ -123,19 +108,12 @@ class DSCaculator(object):
     def __init__(self, configdir) -> None:
         self.denominators = []
         self.statistics = {}
-        f = open(os.path.join(configdir, 'config.json'), 'r', encoding='utf8')
-        data = json.load(f)
-        f.close()
 
-        pdir = os.path.join(configdir, 'products')
-        products = data['products']
-        for p in products:
-            all_products[p] = DSProduct(p, os.path.join(pdir, p+'.json'))
+        for p in DSConfig.products:
+            all_products[p] = DSProduct(p, DSConfig.products[p])
 
-        mdir = os.path.join(configdir, 'machines')
-        machines = data['machines']
-        for m in machines:
-            all_machines[m] = DSMachine(m, os.path.join(mdir, m+'.json'))
+        for m in DSConfig.machines:
+            all_machines[m] = DSMachine(m, DSConfig.machines[m])
 
     def clear(self):
         self.denominators.clear()
