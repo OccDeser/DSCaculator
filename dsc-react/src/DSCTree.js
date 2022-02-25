@@ -46,6 +46,7 @@ class DSCTree extends Component {
               key={"key-" + k}
               formulas={DSCData.formula[r.name]}
               changeFormula={this.changePerferFormula}
+              perferFormula={this.state.preferFormula[r.name]}
             />
           ),
           children: this.getChildrenNodes(r.name, k),
@@ -57,8 +58,6 @@ class DSCTree extends Component {
             <DSCPopover
               name={r.name}
               key={"key-" + k}
-              formulas={DSCData.formula[r.name]}
-              changeFormula={this.changePerferFormula}
             />
           ),
         };
@@ -78,7 +77,8 @@ class DSCTree extends Component {
           key={"key-" + k}
           formulas={DSCData.formula[product]}
           changeFormula={this.changePerferFormula}
-        />
+          perferFormula={this.state.preferFormula[product]}
+          />
       ),
       children: this.getChildrenNodes(product, k),
     };
