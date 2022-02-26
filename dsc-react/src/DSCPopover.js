@@ -13,9 +13,9 @@ function MineralCard(props) {
 }
 
 function ProductCard(props) {
-  const { name, formulas, onChange, pformula } = props;
+  const { name, formulas, onChange, pformula, time, num, efficient } = props;
   const paddning = 8;
-  console.log(pformula);
+
   var defaultValue = formulas.indexOf(pformula);
   var opts = formulas.map((f, i) => {
     var reactants = f.reactants.map((r) => r.name);
@@ -40,7 +40,6 @@ function ProductCard(props) {
 
   var byproductsCom = <></>;
   if (pformula.by_products.length > 0) {
-    console.log(pformula.by_products);
     byproductsCom = (
       <div style={{ paddingBottom: paddning }}>
         <Text>副产物: </Text>
@@ -48,10 +47,14 @@ function ProductCard(props) {
       </div>
     );
   }
+  console.log(pformula.machine, efficient);
 
+  var machineNum = num / ((time / pformula.time) * pformula.num * efficient);
   var machineCom = (
     <div style={{ paddingBottom: paddning }}>
-      <Text>制造设备: {pformula.machine}</Text>
+      <Text>
+        制造设备: {pformula.machine}*{machineNum.toFixed(2)}
+      </Text>
     </div>
   );
   return (
@@ -66,7 +69,15 @@ function ProductCard(props) {
 }
 
 function DSCPopover(props) {
-  const { name, formulas, changeFormula, perferFormula } = props;
+  const {
+    name,
+    formulas,
+    changeFormula,
+    perferFormula,
+    time,
+    demandNum,
+    efficient,
+  } = props;
 
   const onChange = (value) => {
     console.log("formula select: formula ", value);
@@ -78,13 +89,16 @@ function DSCPopover(props) {
     content = (
       <ProductCard
         name={name}
+        time={time}
+        num={demandNum}
+        efficient={efficient}
         formulas={formulas}
         onChange={onChange}
         pformula={perferFormula}
       />
     );
   } else {
-    content = <MineralCard name={name} />;
+    content = <MineralCard num={demandNum} name={name} time={time} />;
   }
 
   return (

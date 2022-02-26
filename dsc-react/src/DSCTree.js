@@ -7,7 +7,6 @@ class DSCTree extends Component {
   constructor(props) {
     super(props);
 
-    console.log("tree: " + this.props.product);
     var preferFormula = {};
     for (var p in DSCData.formula) {
       preferFormula[p] = DSCData.formula[p][0];
@@ -29,27 +28,63 @@ class DSCTree extends Component {
     });
   };
 
-  getChildrenNodes(product, key) {
+  getEfficient = (machine) => {
+    var furnaceE, manufactureE;
+    if (this.props.furnace === "位面熔炉") {
+      furnaceE = 2;
+    } else if (this.props.furnace === "电弧熔炉") {
+      furnaceE = 1;
+    } else {
+      console.log("furnace error");
+    }
+    if (this.props.manufacture === "制造台MK.I") {
+      manufactureE = 0.75;
+    } else if (this.props.manufacture === "制造台MK.II") {
+      manufactureE = 1;
+    } else if (this.props.manufacture === "制造台MK.III") {
+      manufactureE = 1.5;
+    } else {
+      console.log("manufacture error");
+    }
+
+    var efficient;
+    if (machine === "冶炼设备") {
+      efficient = furnaceE;
+    } else if (machine === "制造台") {
+      efficient = manufactureE;
+    } else {
+      efficient = 1;
+    }
+    return efficient;
+  };
+
+  getChildrenNodes(product, key, demandNum) {
     const pFormula = this.state.preferFormula[product];
 
     var children = pFormula.reactants.map((r, i) => {
       var k = key + "-" + pFormula.id + "-" + r.name + "-" + i;
+      var reactantNum = (demandNum / pFormula.num) * r.num;
       if (
-        r.name != product &&
+        r.name !== product &&
         this.state.preferFormula.hasOwnProperty(r.name)
       ) {
+        var pformula = this.state.preferFormula[r.name];
+        var efficient = this.getEfficient(pformula.machine);
         return {
           id: "id-" + k,
           label: (
             <DSCPopover
               name={r.name}
               key={"key-" + k}
+              demandNum={reactantNum}
+              time={this.props.time}
+              efficient={efficient}
+              perferFormula={pformula}
               formulas={DSCData.formula[r.name]}
               changeFormula={this.changePerferFormula}
-              perferFormula={this.state.preferFormula[r.name]}
             />
           ),
-          children: this.getChildrenNodes(r.name, k),
+          children: this.getChildrenNodes(r.name, k, demandNum),
         };
       } else {
         return {
@@ -58,6 +93,8 @@ class DSCTree extends Component {
             <DSCPopover
               name={r.name}
               key={"key-" + k}
+              demandNum={reactantNum}
+              time={this.props.time}
             />
           ),
         };
@@ -69,18 +106,35 @@ class DSCTree extends Component {
 
   genTreeNodes(product) {
     const k = "0";
+    const pformula = this.state.preferFormula[product];
+    var efficient = this.getEfficient(pformula.machine);
+    var demandNum =
+      (this.props.time / pformula.time) *
+      pformula.num *
+      this.props.times *
+      efficient;
+
+    console.log(
+      "genTreeNodes ",
+      efficient,
+      pformula.machine,
+      this.props.manufacture
+    );
     return {
       id: "id-" + k,
       label: (
         <DSCPopover
           name={product}
           key={"key-" + k}
+          demandNum={demandNum}
+          time={this.props.time}
+          efficient={efficient}
           formulas={DSCData.formula[product]}
           changeFormula={this.changePerferFormula}
-          perferFormula={this.state.preferFormula[product]}
-          />
+          perferFormula={pformula}
+        />
       ),
-      children: this.getChildrenNodes(product, k),
+      children: this.getChildrenNodes(product, k, demandNum),
     };
   }
 

@@ -2,7 +2,7 @@ import React from "react";
 import DSCSelect from "./DSCSelect";
 import DSCTree from "./DSCTree";
 import DSCData from "./data.json";
-import { Row, Col, Button } from "antd";
+import { Row, Col, Button, InputNumber } from "antd";
 
 class DSCApp extends React.Component {
   constructor(props) {
@@ -11,6 +11,8 @@ class DSCApp extends React.Component {
       product: undefined,
       furnace: DSCData.furnace[0],
       manufacture: DSCData.manufacture[0],
+      time: 1800,
+      times: 1,
       collapsable: true,
     };
   }
@@ -32,6 +34,14 @@ class DSCApp extends React.Component {
       manufacture: manufacture,
     });
   };
+
+  changeOnTimes = (times) => {
+    console.log("changeOnTimes " + times);
+    this.setState({
+      times: times,
+    });
+  };
+
   opt = (list) => {
     return list.map((p) => {
       return {
@@ -43,9 +53,10 @@ class DSCApp extends React.Component {
   render() {
     var tree = <> </>;
     if (this.state.product !== undefined) {
-      console.log(this.state.product);
       tree = (
         <DSCTree
+          time={this.state.time}
+          times={this.state.times}
           product={this.state.product}
           furnace={this.state.furnace}
           manufacture={this.state.manufacture}
@@ -86,9 +97,37 @@ class DSCApp extends React.Component {
                   />
                 </Row>
               </Col>
-              <Col flex="1 1 100px">
+              <Col flex="1 1 80px">
+                <Row justify="center">
+                  <InputNumber
+                    style={{ width: 80 }}
+                    defaultValue={1}
+                    min={1}
+                    max={72900}
+                    formatter={(value) => `x${value}`}
+                    parser={(value) => value.replace("x", "")}
+                    onChange={this.changeOnTimes}
+                  />
+                </Row>
+              </Col>
+              <Col flex="1 1 80px">
                 <Row justify="center">
                   <Button
+                    style={{ width: 80 }}
+                    onClick={() => {
+                      this.setState({
+                        collapsable: !this.state.collapsable,
+                      });
+                    }}
+                  >
+                    取整
+                  </Button>
+                </Row>
+              </Col>
+              <Col flex="1 1 80px">
+                <Row justify="center">
+                  <Button
+                    style={{ width: 80 }}
                     onClick={() => {
                       this.setState({
                         collapsable: !this.state.collapsable,
